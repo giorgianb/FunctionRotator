@@ -7,27 +7,20 @@
   #include <stdlib.h>
   #include "ast.h"
   #include "function-parser.h"
-
-  struct parser_bridge
-  {
-      int error_type;
-      YYLTYPE error_loc;
-      struct ast *tree;
-  }
-      
 %}
+
 
 %%
  /* Real number */
 (([[:digit:]]+(\.[[:digit:]]*)?)|(\.[[:digit:]]+)) {
-   yylval = ast_terminal_acquire (AST_NUMBER, atof (yytext), NULL);
+   *yylval = ast_terminal_acquire (AST_NUMBER, atof (yytext), NULL);
    return NUMBER;
  }
 
  /* Identifier */
 [[:alpha:]]+[[:alnum:]]* {
-   yylval = ast_terminal_acquire (AST_ID, 0, yytext);
-   return REAL;
+   *yylval = ast_terminal_acquire (AST_ID, 0, yytext);
+   return ID;
  }
 
  /* Operators  */
@@ -39,7 +32,7 @@
 [ \t]
 
  /* Any other symbol is an error */
-. yyerror(scanner, llocp, "unexpected token");
+. return INVALID_TOKEN;
 
  /* Deal with EOF */
 <<EOF>> return END;

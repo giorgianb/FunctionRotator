@@ -1,17 +1,38 @@
-%{
-  #include <stdio.h>
-  #include <string.h>
-  #include <errno.h>
-  #include "ast.h"
+%output	"function-parser.c"
+%defines "function-parser.h"
 
-  int yylex (void);
-  void yyerror (const char *);
-  void ast_print (const struct ast *);
-%}
-
+%define api.pure full
 %define api.value.type {struct ast *}
+%locations
+			
+%param {yyscan_t scanner}
+
 %destructor { ast_release ($$); } exp
-%token REAL IDENT
+			
+%code requires {
+#include <stdio.h>
+#include <string.h>
+#include "parser.h"
+#include "ast.h"
+
+#ifndef YY_TYPEDEF_YY_SCANNER_T
+#define YY_TYPEDEF_YY_SCANNER_T
+    typedef void *yyscan_t;
+#endif
+    
+     struct parser_bridge
+    {
+	struct parser_error error;
+	struct ast *tree;
+    };
+}
+			
+%code {
+#include "function-lexer.h"
+    static void yyerror (const YYLTYPE *llocp, yyscan_t scanner, const char *msg);
+}
+			
+%token NUMBER ID END INVALID_TOKEN
 %right '='
 %left ','
 %left '+' '-'
@@ -19,118 +40,210 @@
 %right '^'
 
 %%
-input:		%empty
+input:
+		%empty
 	|	input line
-	;
+		
+line:
+		'\n'
+	|	exp '\n'
+		{
+		    YY_EXTRA_TYPE result = yyget_extra (scanner);
+		    if (result)
+			{
+			    result->tree = $1;
+			    result->error.error_type = PARSER_NO_ERROR;
+			}
 
-line:		'\n'
-	        |	exp '\n' { ast_print ($1); putchar('\n'); ast_release ($1); }
-	;
+		    YYACCEPT;
+                }
+	|	exp END
+		{
+		    YY_EXTRA_TYPE result = yyget_extra (scanner);
+		    if (result)
+			{
+			    result->tree = $1;
+			    result->error.error_type = PARSER_NO_ERROR;
+		        }
+		    YYACCEPT;
+		}
 
-exp:		REAL        { $$ = $1; }
-	|	IDENT       { $$ = $1; }
-	|	'(' exp ')' { $$ = $2; }
+exp:
+		NUMBER
+		{
+		    $$ = $1;
+		}
+	|	ID
+		{
+		    $$ = $1;
+		}
+
+	|	'(' exp ')'
+		{
+		    $$ = $2;
+		}
+	|	ID '(' exp ')'
+		{
+		    struct ast *const t = ast_nonterminal_acquire (AST_CALL, $1, $3);
+		    if (!t)
+			{
+			    YY_EXTRA_TYPE result = yyget_extra (scanner);
+			    if (result)
+				{
+				    result->tree = NULL;
+				    result->error.error_type = PARSER_OUT_OF_MEMORY;
+			        }
+		            YYABORT;
+ 
+		        }
+		    $$ = t;
+                }
+	|	INVALID_TOKEN
+		{
+		    $$ = NULL;
+		    YY_EXTRA_TYPE result = yyget_extra (scanner);
+		    if (result)
+			{
+			    const struct YYLTYPE loc = @1;
+			    result->tree = NULL;
+			    result->error.error_type = PARSER_INVALID_TOKEN;
+			    result->error.first_line = loc.first_line;
+			    result->error.last_line = loc.last_line;
+			    result->error.first_column = loc.first_column;
+			    result->error.last_column = loc.last_column;
+		        }
+		    YYABORT;
+		}
 	|	exp '+' exp
 		{
-		    struct ast *t = ast_nonterminal_acquire (ADD, $1, $3);
+		    struct ast *const t = ast_nonterminal_acquire (AST_ADD, $1, $3);
 		    if (!t)
-			    yyerror (strerror (errno));
-
+			{
+			    YY_EXTRA_TYPE result = yyget_extra (scanner);
+			    if (result)
+				{
+				    result->tree = NULL;
+				    result->error.error_type = PARSER_OUT_OF_MEMORY;
+			        }
+		            YYABORT;
+ 
+		        }
+			
 		    $$ = t;
 		}
 	|	exp '-' exp
 		{
-		    struct ast *t = ast_nonterminal_acquire (ADD, $1, $3);
+		    struct ast *const t = ast_nonterminal_acquire (AST_ADD, $1, $3);
 		    if (!t)
-			yyerror (strerror (errno));
+			{
+			    YY_EXTRA_TYPE result = yyget_extra (scanner);
+			    if (result)
+				{
+				    result->tree = NULL;
+				    result->error.error_type = PARSER_OUT_OF_MEMORY;
+				}
+		             YYABORT;
+		      }
 
 		    $$ = t;
 		}
 	|	exp '*' exp
 		{
-		    struct ast *t = ast_nonterminal_acquire (MULTIPLY, $1, $3);
+		    struct ast *const t = ast_nonterminal_acquire (AST_MULTIPLY, $1, $3);
 		    if (!t)
-			yyerror (strerror (errno));
-
+			{
+			    YY_EXTRA_TYPE result = yyget_extra (scanner);
+			    if (result)
+				{
+				    result->tree = NULL;
+				    result->error.error_type = PARSER_OUT_OF_MEMORY;
+			    	}
+              		}
+		
 		    $$ = t;
 		}
+
 	|	exp '/' exp
 		{
-		    struct ast *t = ast_nonterminal_acquire(DIVIDE, $1, $3);
+		    struct ast *const t = ast_nonterminal_acquire (AST_DIVIDE, $1, $3);
 		    if (!t)
-			yyerror( strerror (errno));
-
+			{
+			    YY_EXTRA_TYPE result = yyget_extra (scanner);
+			    if (result)
+				{
+				    result->tree = NULL;
+				    result->error.error_type = PARSER_OUT_OF_MEMORY;
+			    	}
+              		}
+		
 		    $$ = t;
 		}
+
+
 	|	exp '^' exp
 		{
-		    struct ast *t = ast_nonterminal_acquire (EXPONENT, $1, $3);
+		    struct ast *const t = ast_nonterminal_acquire (AST_EXPONENT, $1, $3);
 		    if (!t)
-			yyerror (strerror (errno));
-
+			{
+			    YY_EXTRA_TYPE result = yyget_extra (scanner);
+			    if (result)
+				{
+				    result->tree = NULL;
+				    result->error.error_type = PARSER_OUT_OF_MEMORY;
+			    	}
+              		}
+		
 		    $$ = t;
 		}
-	|	IDENT '(' exp ')'
-		{
-		    struct ast *t = ast_nonterminal_acquire (CALL, $1, $3);
-		    if (!t)
-			yyerror (strerror (errno));
 
-		    $$ = t;
-		}
 	|	exp ',' exp
 		{
-		    struct ast *t = ast_nonterminal_acquire (COMMA, $1, $3);
+		    struct ast *const t = ast_nonterminal_acquire (AST_COMMA, $1, $3);
 		    if (!t)
-			yyerror (strerror (errno));
-
+			{
+			    YY_EXTRA_TYPE result = yyget_extra (scanner);
+			    if (result)
+				{
+				    result->tree = NULL;
+				    result->error.error_type = PARSER_OUT_OF_MEMORY;
+			    	}
+              		}
+		
 		    $$ = t;
 		}
+
 	|	exp '=' exp
 		{
-		    struct ast *t = ast_nonterminal_acquire (EQUAL, $1, $3);
+		    struct ast *const t = ast_nonterminal_acquire (AST_EQUAL, $1, $3);
 		    if (!t)
-			yyerror (strerror (errno));
-
+			{
+			    YY_EXTRA_TYPE result = yyget_extra (scanner);
+			    if (result)
+				{
+				    result->tree = NULL;
+				    result->error.error_type = PARSER_OUT_OF_MEMORY;
+			    	}
+              		}
+		
 		    $$ = t;
 		}
 %%
 
-void
-yyerror (const char *const msg)
-{
-  fprintf (stderr, "error: %s\n", msg);
-}
 
-void
-ast_print (const struct ast *const t)
+static void
+yyerror (const YYLTYPE *const llocp, yyscan_t scanner, const char *const msg)
 {
-  if (t->operator != NONE)
-    {
-      if (t->operator != CALL)
-	printf ("(%c ", t->operator);
-      else
-	printf("(call ");
-      
-      ast_print (t->left);
-      putchar (' ');
-      ast_print (t->right);
-      putchar(')');
-    }
+  YY_EXTRA_TYPE err = yyget_extra (scanner);
+  err->error.first_line = llocp->first_line;
+  err->error.last_line = llocp->last_line;
+  err->error.first_column = llocp->first_column;
+  err->error.last_column = llocp->last_column;
+  if (strcmp (msg, "syntax error: cannot back up") == 0)
+    err->error.error_type = PARSER_SYNTAX_ERROR;
+  else if (strcmp(msg, "syntax error") == 0)
+    err->error.error_type = PARSER_SYNTAX_ERROR;
+  else if (strcmp(msg, "memory exhausted") == 0)
+    err->error.error_type = PARSER_OUT_OF_MEMORY;
   else
-    {
-      if (t->operand.type == NUMBER)
-	printf ("%f", t->operand.value);
-      else
-	printf ("%s", t->operand.id);
-    }
-}
-	  
-      
-int
-main (void)
-{
-  yyparse();
-
-  return 0;
+    err->error.error_type = PARSER_UNKNOWN_ERROR;
 }

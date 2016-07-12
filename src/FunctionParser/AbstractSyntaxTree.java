@@ -1,20 +1,31 @@
 package FunctionParser;
 
+/**
+ * A basic AbstractSyntaxTree suitable for basic mathematical expressions.
+ * This can be used to represent expressions where each operator has at most
+ * two operands, and the non-terminal types of an expression are either numbers
+ * or identifiers (an alphanumeric string not beginning with a number).
+ *
+ * @author Giorgian Borca-Tasciuc
+ * @version 0.2
+ * @since 0.2
+ * @see Parser
+ */
 public class AbstractSyntaxTree
 {
-    static final int NONE = 0;
+    public static final int NONE = 0;
     
-    static final int ADD = '+';
-    static final int SUBTRACT = '-';
-    static final int MULTIPLY = '*';
-    static final int DIVIDE = '/';
-    static final int EXPONENT = '^';
-    static final int EQUAL = '=';
-    static final int COMMA = ',';
-    static final int CALL = 1;
+    public static final int ADD = '+';
+    public static final int SUBTRACT = '-';
+    public static final int MULTIPLY = '*';
+    public static final int DIVIDE = '/';
+    public static final int EXPONENT = '^';
+    public static final int EQUAL = '=';
+    public static final int COMMA = ',';
+    public static final int CALL = 1;
 
-    static final int NUMBER = 1;
-    static final int ID = 2;
+    private static final int NUMBER = 1;
+    private static final int ID = 2;
 
     private int operator;
     private AbstractSyntaxTree left;
@@ -39,6 +50,8 @@ public class AbstractSyntaxTree
 	this.id = id;
     }
 
+    /**
+     *
     public AbstractSyntaxTree (final int operator,
 			       final AbstractSyntaxTree left,
 			       final AbstractSyntaxTree right)

@@ -24,7 +24,7 @@ ast_nonterminal_acquire (const int operator, struct ast *const left,
 {
   struct ast *t = NULL;
 
-  if (operator != NONE)
+  if (operator != AST_NONE)
     {
 
       t = ast_acquire ();
@@ -46,7 +46,7 @@ ast_nonterminal_acquire (const int operator, struct ast *const left,
    and therefore represents an expression with no operators, such as
    the number 5 or the variable 'x'. If there is not enough memory
    to allocate an ast, NULL is returned and errno is set to ENONMEM. If
-   type is not either NUMBER or ID, then NULL is returned and errno is
+   type is not either AST_NUMBER or AST_ID, then NULL is returned and errno is
    set to EINVAL. Otherwise, the constructed ast is returned. Note that
    the constructed ast will contain no references to id and therefore
    it is safe to deallocate id if it is dynamically allocated. */
@@ -59,14 +59,14 @@ ast_terminal_acquire (const int type, const double value,
   t = ast_acquire ();
   if (t)
     {
-      t->operator = NONE;
+      t->operator = AST_NONE;
       t->operand.type = type;
       switch (type)
 	{
-	case NUMBER:
+	case AST_NUMBER:
 	  t->operand.value = value;
 	  break;
-	case ID:
+	case AST_ID:
 	  t->operand.id = strdup (id);
 	  if (!t->operand.id)
 	    {
@@ -90,7 +90,7 @@ ast_terminal_acquire (const int type, const double value,
 void
 ast_release (struct ast *const t)
 {
-  if (t->operator != NONE)
+  if (t->operator != AST_NONE)
     {
       ast_release (t->left);
       ast_release (t->right);
@@ -98,7 +98,7 @@ ast_release (struct ast *const t)
     }
   else
     {
-      if (t->operand.type == ID)
+      if (t->operand.type == AST_ID)
 	free(t->operand.id);
 
       free(t);

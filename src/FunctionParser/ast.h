@@ -1,10 +1,12 @@
 /* ast.h - interface to ast.c */
+#ifndef AST_HEADER_INCLUDED
+#define AST_HEADER_INCLUDED
 enum operators
-  { ADD = '+', SUBTRACT = '-', MULTIPLY = '*', DIVIDE = '/', EXPONENT = '^',
-    EQUAL = '=', COMMA = ',', CALL, NONE
+  { AST_ADD = '+', AST_SUBTRACT = '-', AST_MULTIPLY = '*', AST_DIVIDE = '/', AST_EXPONENT = '^',
+    AST_EQUAL = '=', AST_COMMA = ',', AST_CALL, AST_NONE
 };
 enum terminal_types
-{ NUMBER, ID };
+{ AST_NUMBER, AST_ID };
 
 struct terminal_type
 {
@@ -39,3 +41,4 @@ struct ast *ast_nonterminal_acquire (int operator, struct ast *left,
 struct ast *ast_terminal_acquire (int type, double value, const char *id);
 
 void ast_release (struct ast *t);
+#endif	/* AST_HEADER_INCLUDED */
