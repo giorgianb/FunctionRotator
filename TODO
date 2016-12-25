@@ -1,0 +1,19 @@
+0.2 plans to be a rewrite of the internal structure of FunctionRotator.
+
+A lot more error checking will be done. Classes will be more modular.
+
+Changes:
+PlotEngine's method will be restricted (Methods like defineFunction() will disappear).
+A new group of classes will be made representing function types. So far the list classes is
+Normal2DFunction
+Normal3DFunction
+Parametric2DFunction
+Parametric3DFunction
+PolarFunction
+
+Each class will perform error checking to make sure a function is well formed.
+
+Functions will be able to refer to each other (and other variables) through a FunctionNamespace. A FunctionNamespace will allow
+the declaring and defining functions.
+
+Note that my v1.0, FunctionRotator will have a new plotting software - perhaps MathGL, JFreeChart, or JZY3D. Suggestions are welcome!
