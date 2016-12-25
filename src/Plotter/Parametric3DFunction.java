@@ -8,8 +8,8 @@ public class Parametric3DFunction
 				 final Function yFunc,
 				 final Function zFunc)
     {
-	if (xFunc.getArity () != 1 || yFunc.getArity () != 1 || zFunc.getArity () != 1)
-	    throw new FunctionMisMatchError ("Parametric3DFunctions must have an arity of 1!");
+	if (xFunc.getArity () != 2 || yFunc.getArity () != 2 || zFunc.getArity () != 2)
+	    throw new FunctionMisMatchError ("Parametric3DFunctions must have an arity of 2!");
 
 	this.xFunc = xFunc;
 	this.yFunc = yFunc;
