@@ -39,9 +39,10 @@ public class Namespace
     }
     
     public double get (final String variable)
+	throws UndefinedReferenceError
     {
 	if (!isDefined (variable))
-	    throw new UndefinedReferenceException (variable + " is not defined.");
+	    throw new UndefinedReferenceError (variable + " is not defined.");
 
 	return variables.get (key);
     }
@@ -72,10 +73,11 @@ public class Namespace
     }
 
     public Expression get (final String funcName, final int arity)
+	throws UndefinedReferenceError
     {
 	
 	if (!isDefined (funcName, arity))
-	    throw new UndefinedReferenceException (funcName + "(" + arity + ") is not defined.");
+	    throw new UndefinedReferenceError (funcName + "(" + arity + ") is not defined.");
 
 	FunctionPrototype fp = new FunctionPrototype (funcName, arity);
 	retrun functions.get (fp);
