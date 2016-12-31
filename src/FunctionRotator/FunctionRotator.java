@@ -201,7 +201,7 @@ public final class FunctionRotator
 		appWindow.add (function, makeConstraints (x, y, 4, 1));
 		x += 4;
 
-		l = new Label ("x=");
+		l = new Label ("y=");
 		appWindow.add (l, makeConstraints (x, y, 1, 1));
 		x += 1;
 				
