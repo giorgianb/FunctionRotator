@@ -104,12 +104,18 @@ final public class ExpressionStream
 		if (current.getToken ().equals ("("))
 		    {
 			left = getNthLevelExpression (1);
+			current = in.read ();
+			if (!current.getToken ().equals (")"))
+			    {
+				in.pushBack (current);
+				throw new ParseError ("Expected closing parenthesis.");
+			    }
 			return left;
 		    }
 		else if (current.getType () == Token.Type.NAME)
 		    {
 			// Check if function call
-		        Token peek = in.read ();
+		        final Token peek = in.read ();
 			in.pushBack (peek);
 			if (peek.getToken ().equals ("("))
 			    return new Expression (current.getToken (), getParameters ());
