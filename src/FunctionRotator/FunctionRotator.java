@@ -6,17 +6,24 @@ import Parser.ExpressionStream;
 import Parser.ParseError;
 import Lexer.TokenStream;
 
+import java.util.logging.Logger;
+import java.util.logging.StreamHandler;
+import java.util.logging.SimpleFormatter;
+import java.util.logging.Level;
 import java.util.Formatter;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.HashSet;
 import java.awt.Frame;
+import java.awt.Dialog;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.TextField;
+import java.awt.TextArea;
 import java.awt.Choice;
 import java.awt.Label;
 import java.awt.Button;
@@ -36,7 +43,11 @@ public final class FunctionRotator
     private static TextField yMin, yMax;
     private static TextField zMin, zMax;
 
+
     private static GNUPlot gnuplot;
+    private static Frame appWindow;
+    private static ByteArrayOutputStream log;
+    private static StreamHandler logHandler;
 
     private static final int NUMBER_FUNCTIONS = 10;
     private static final String PROGRAM_NAME = "Function Rotator";
@@ -51,8 +62,13 @@ public final class FunctionRotator
 	    {
 		alertUser (e.getMessage ());
 	    }
+
+	log = new ByteArrayOutputStream ();
+	logHandler = new StreamHandler (log, new SimpleFormatter ());
+	logHandler.setLevel (Level.ALL);
+	Logger.getLogger ("gnuplot").addHandler (logHandler);
 	
-	final Frame appWindow = new Frame (PROGRAM_NAME);
+	appWindow = new Frame (PROGRAM_NAME);
 	appWindow.addWindowListener (new WindowAdapter ()
 	    {
 		public void windowClosing (final WindowEvent e)
@@ -277,6 +293,22 @@ public final class FunctionRotator
 
     private static void viewLog ()
     {
+	final Frame logWindow = new Frame ("Log");
+	logWindow.addWindowListener (new WindowAdapter ()
+	    {
+		public void windowClosing (final WindowEvent we)
+		{
+		    logWindow.dispose ();
+		}
+	    });
+
+	logHandler.flush ();
+	final TextArea messageArea = new TextArea (log.toString ());
+	messageArea.setEditable (false);
+
+	logWindow.add (messageArea);
+	logWindow.pack ();
+	logWindow.setVisible (true);
     }
 
     private static Set<String> getToProcess ()
@@ -335,12 +367,12 @@ public final class FunctionRotator
 	    case NAME:
 		// Only allowed predefined names
 		if (!exp.getName ().equals ("pi") && !exp.getName ().equals ("x"))
-		    throw new Exception ("reference to undefined name " + exp.getName ());
+		    throw new Exception ("reference to undefined name '" + exp.getName () + "'.");
 		break;
 	    case OPERATOR:
 		final String op = exp.getOperator ();
 		if (!toProcess.contains (op) && !preDef.contains (op))
-		    throw new Exception ("reference to undefined operator " + op);
+		    throw new Exception ("reference to undefined operator " + "'.");
 
 		for (final Expression e: exp.getOperands ())
 		    assertNoInvalidReferences (e, toProcess);
@@ -427,7 +459,20 @@ public final class FunctionRotator
 
     private static void alertUser (final String message)
     {
-	System.err.println (message);
+	final Dialog dialog = new Dialog (appWindow, true);
+
+	dialog.addWindowListener (new WindowAdapter ()
+	    {
+		public void windowClosing (final WindowEvent we)
+		{
+		    dialog.dispose ();
+		}
+	    });
+				  
+	dialog.setTitle ("Error");
+	dialog.add (new Label (message));
+	dialog.pack ();
+	dialog.setVisible (true);
     }
 
     private static GridBagConstraints makeConstraints(final int x,
