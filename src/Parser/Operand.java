@@ -1,6 +1,6 @@
 package Parser;
 
-public class Operand
+final public class Operand
 {
     public enum Type
     {

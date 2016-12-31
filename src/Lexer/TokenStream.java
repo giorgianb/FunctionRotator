@@ -5,7 +5,7 @@ import java.util.ArrayDeque;
 import java.io.InputStream;
 import java.io.IOException;
 
-public class TokenStream
+final public class TokenStream
 {
     private InputStream in;
     private Deque<Token> tokenPushBack;

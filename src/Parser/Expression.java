@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-public class Expression
+final public class Expression
 {
     public enum Type
     {
@@ -88,6 +88,14 @@ public class Expression
 	    throw new IndexOutOfBoundsException ("n is greater than the amount of operands.");
 
 	return operands.get (n);
+    }
+
+    public List<Expression> getOperands ()
+    {
+	if (type != Type.OPERATOR)
+	    throw new UnsupportedOperationException ("Expression is not an operator.");
+	
+	return new ArrayList<> (operands);
     }
 
     public String toString ()

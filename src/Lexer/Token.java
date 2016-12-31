@@ -1,6 +1,6 @@
 package Lexer;
 
-public class Token
+final public class Token
 {
     public enum Type
     {

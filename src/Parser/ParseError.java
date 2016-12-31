@@ -1,6 +1,6 @@
 package Parser;
 
-public class ParseError extends Exception
+final public class ParseError extends Exception
 {
     public ParseError (final String message)
     {

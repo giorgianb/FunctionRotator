@@ -6,7 +6,7 @@ import Lexer.TokenStream;
 import Lexer.Token;
 import java.io.IOException;
 
-public class ExpressionStream
+final public class ExpressionStream
 {
     private TokenStream in;
 
@@ -121,7 +121,10 @@ public class ExpressionStream
 		else
 		    {
 			in.pushBack (current);
-			throw new ParseError ("Unexpected token " + current.getToken ());
+			if (current.getType () == Token.Type.TERMINATOR)
+			    throw new ParseError ("Unexpected end of expression.");
+			else
+			    throw new ParseError ("Unexpected token " + current.getToken ());
 		    }
 	    default:
 		throw new UnsupportedOperationException ("Unknown level " + n);
