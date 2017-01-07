@@ -20,7 +20,15 @@ public final class GNUPlot
     public GNUPlot (final String sessionName)
 	throws IOException
     {
-	gnuplot = new ProcessBuilder ("gnuplot").start ();
+	try
+	    {
+		gnuplot = GNUPlotProcessFactory.getInstance ();
+	    }
+	catch (final Exception e)
+	    {
+		throw new IOException ("Couldn't open gnuplot", e);
+	    }
+	
 	pin = new PrintWriter (gnuplot.getOutputStream ());
 	pout =
 	    new BufferedReader (new InputStreamReader (gnuplot.getInputStream ()));
@@ -29,7 +37,7 @@ public final class GNUPlot
 	log = Logger.getLogger (sessionName);
 	log.setLevel (Level.ALL);
     }
-    
+
     public void send (final String command)
 	throws IOException
     {
