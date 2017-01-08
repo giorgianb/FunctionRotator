@@ -1,11 +1,13 @@
 # FunctionRotator
 Wrapper around gnuplot to more easily plot rotated functions.
 
-## New Features in 0.3:
+## New Features in 0.2:
 
-* New "Plotter" class for higher level plotting
+* Built-in parser to do rudimentary syntax checking on user input before it is sent to gnuplot.
 
-* Support for rotating around any linear function of x
+* Better interface.
+
+* Refactored to allow for easier extensions and development.
 
 * Bug fixes
 
@@ -21,13 +23,3 @@ make
 ```
 java -jar FunctionRotator.jar
 ```
-
-
-
-
-
-
-
-
-
-
