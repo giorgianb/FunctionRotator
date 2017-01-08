@@ -22,7 +22,7 @@ class GNUPlotProcessFactory
     public static Process getInstance ()
 	throws ZipException, IOException
     {
-	final File gnuplot = new File(getGNUPlot (getJar ()), "bin/gnuplot.exe");
+	final File gnuplot = new File(getGNUPlot (getJar ()), "gnuplot/bin/gnuplot.exe");
 	return new ProcessBuilder (gnuplot.getAbsolutePath ()).start ();
     }
 	
@@ -52,9 +52,11 @@ class GNUPlotProcessFactory
     {
 	final List<ZipEntry> entries;
 	if (entry.isDirectory ())
+	    {
 	    entries = zipFile.stream ()
 		.filter (e -> e.getName ().startsWith (entry.getName ()))
 		.collect (Collectors.toList ());
+	    }
 	else
 	    {
 		entries = new ArrayList <>();
@@ -63,13 +65,13 @@ class GNUPlotProcessFactory
 
 	for (final ZipEntry file: entries)
 	    {
-		final File destFile = new File (destDir + File.separator + entry.getName ());
-		if (entry.isDirectory ())
+		final File destFile = new File (destDir + File.separator + file.getName ());
+		if (file.isDirectory ())
 		    destFile.mkdir ();
 
 		else
 		    {
-			try (final InputStream in = new BufferedInputStream (zipFile.getInputStream (entry));
+			try (final InputStream in = new BufferedInputStream (zipFile.getInputStream (file));
 			     final OutputStream out = new BufferedOutputStream (new FileOutputStream (destFile)))
 			    {
 				int c;

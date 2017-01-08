@@ -8,6 +8,7 @@ import java.io.BufferedReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.IOException;
+import java.util.zip.ZipException;
 
 public final class GNUPlot
 {
@@ -24,7 +25,7 @@ public final class GNUPlot
 	    {
 		gnuplot = GNUPlotProcessFactory.getInstance ();
 	    }
-	catch (final Exception e)
+	catch (final ZipException e)
 	    {
 		throw new IOException ("Couldn't open gnuplot", e);
 	    }
@@ -58,4 +59,3 @@ public final class GNUPlot
 	    log.info (pout.readLine ());
     }
 }
-	

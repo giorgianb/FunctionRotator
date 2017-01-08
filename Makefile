@@ -16,3 +16,6 @@ win64:
 	mv gnuplot/win64 gnuplot/gnuplot
 	jar uf FunctionRotator.jar -C gnuplot gnuplot
 	mv gnuplot/gnuplot gnuplot/win64
+clean:
+	rm -f FunctionRotator.jar
+	find . -name '*.class' -exec rm {} +
